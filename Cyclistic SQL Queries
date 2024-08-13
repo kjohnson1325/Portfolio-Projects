@@ -1,1 +1,159 @@
+#Initially combining 1 year's worth of data from cyclistic database into SQL, ordering from oldest to newest
 
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202307part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202307part2`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202308part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202308part2`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202309part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202309part2`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202310part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202310part2`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202311`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202312`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202401`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202402`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202403`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202404`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202405part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202405part2`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202406part1`
+  UNION ALL
+  SELECT *
+  FROM `portfolio-projects-431715.cyclistic_data.202406part2`
+
+  ORDER BY
+    started_at ASC
+
+#Getting calculated columns and saving as another table - ride_length, day_of_week, week, month
+
+  SELECT 
+    *,
+    timestamp_diff(ended_at, started_at, MINUTE) AS ride_length,
+    extract(DAYOFWEEK FROM started_at) AS day_of_week,
+    extract(WEEK FROM started_at) AS week,
+    extract(MONTH FROM started_at) AS month
+  FROM `portfolio-projects-431715.cyclistic_data.full_year_raw_data` 
+
+# Converting day_of_week from number to actual day, month to actual month name
+
+  SELECT *,
+      CASE
+      WHEN day_of_week = 1
+      THEN 'Sunday'
+      WHEN day_of_week = 2
+      THEN 'Monday'
+      WHEN day_of_week = 3
+      THEN 'Tuesday'
+      WHEN day_of_week = 4
+      THEN 'Wednesday'
+      WHEN day_of_week = 5
+      THEN 'Thursday'
+      WHEN day_of_week = 6
+      THEN 'Friday'
+      WHEN day_of_week = 7
+      THEN 'Saturday'
+    END AS day_of_week_actual,
+    CASE
+      WHEN month = 1
+      THEN 'January'
+      WHEN month = 2
+      THEN 'February'
+      WHEN month = 3
+      THEN 'March'
+      WHEN month = 4
+      THEN 'April'
+      WHEN month = 5
+      THEN 'May'
+      WHEN month = 6
+      THEN 'June'
+      WHEN month = 7
+      THEN 'July'
+      WHEN month = 8
+      THEN 'August'
+      WHEN month = 9
+      THEN 'September'
+      WHEN month = 10
+      THEN 'October'
+      WHEN month = 11
+      THEN 'November'
+      WHEN month = 12
+      THEN 'December'
+    END AS actual_month
+  FROM `portfolio-projects-431715.cyclistic_data.cyclistic_full_year_calcs` 
+  ORDER BY started_at ASC
+
+# Generating annual stats table to analyze in Excel
+
+  SELECT 
+    member_casual,
+    rideable_type,
+    COUNT(*) AS number_of_rides,
+    ROUND(AVG(ride_length),2) AS average_ride_length
+  FROM `portfolio-projects-431715.cyclistic_data.cyclistic_full_year_v2`
+  GROUP BY 
+    member_casual, rideable_type
+  ORDER BY
+    number_of_rides DESC
+
+# Generating Monthly stats table to analyze in Excel
+
+  SELECT 
+    member_casual,
+    rideable_type,
+    month,
+    actual_month,
+    COUNT(*) AS number_of_rides,
+    ROUND(AVG(ride_length),2) AS average_ride_length
+  FROM `portfolio-projects-431715.cyclistic_data.cyclistic_full_year_v2`
+  GROUP BY 
+    member_casual, actual_month, rideable_type, month
+  ORDER BY
+    month
+
+# Generating Day of Week stats table to analyze in Excel
+
+  SELECT 
+    member_casual,
+    rideable_type,
+    day_of_week,
+    day_of_week_actual,
+    COUNT(*) AS number_of_rides,
+    ROUND(AVG(ride_length),2) AS average_ride_length
+  FROM `portfolio-projects-431715.cyclistic_data.cyclistic_full_year_v2`
+  GROUP BY 
+    member_casual, day_of_week, day_of_week_actual, rideable_type
+  ORDER BY
+    day_of_week
